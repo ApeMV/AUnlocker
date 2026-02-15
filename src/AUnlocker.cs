@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using BepInEx.Configuration;
@@ -10,9 +11,12 @@ namespace AUnlocker;
 
 [BepInAutoPlugin]
 [BepInProcess("Among Us.exe")]
+#pragma warning disable BepInEx002
 public partial class AUnlocker : BasePlugin
+#pragma warning restore BepInEx002
 {
     public Harmony Harmony { get; } = new(Id);
+    public new static ManualLogSource Log;
 
     // General
     public static ConfigEntry<KeyCode> ReloadConfigKeybind;
@@ -40,7 +44,6 @@ public partial class AUnlocker : BasePlugin
     public static ConfigEntry<bool> ShowTaskPanelInMeetings;
 
     // Unsafe
-    public static ConfigEntry<bool> AllowAllCharacters;
     public static ConfigEntry<bool> NoCharacterLimit;
     public static ConfigEntry<bool> NoChatCooldown;
     public static ConfigEntry<bool> NoOptionsLimits;
@@ -50,6 +53,8 @@ public partial class AUnlocker : BasePlugin
     /// </summary>
     public override void Load()
     {
+        Log = base.Log;
+
         // General
         ReloadConfigKeybind = Config.Bind("General", "ReloadConfigKeybind", KeyCode.F6, "The keyboard key used to reload the configuration file");
         ButtonSize = Config.Bind("General", "ButtonSize", 1f, "Resize the in-game buttons (Use, Kill, Report, etc.)\nSet to 1.0 to disable scaling");
@@ -58,7 +63,7 @@ public partial class AUnlocker : BasePlugin
         UnlockMinor = Config.Bind("Account", "RemoveMinorStatus", false, "Remove minor status and restrictions (no online play)");
         RemovePenalty = Config.Bind("Account", "NoDisconnectPenalty", true, "Remove the penalty after disconnecting from too many lobbies");
         // Chat
-        PatchChat = Config.Bind("Chat", "Enabled", true, "Allow Ctrl+C and Ctrl+V (copy-pasting)\nBe able to send URLs and Email addresses\nIncrease the character limit from 100 to 120");
+        PatchChat = Config.Bind("Chat", "Enabled", true, "Use Ctrl+C, Ctrl+V and Ctrl+X to copy, paste and cut chat messages\nBe able to send symbols, URLs and Email addresses\nIncrease the character limit from 100 to 120\nReduce the chat cooldown from 3s to 2.1s");
         ChatHistoryLimit = Config.Bind("Chat", "ChatHistoryLimit", 20, "The maximum amount of chat messages to keep in the chat history");
         // Cosmetics
         UnlockCosmetics = Config.Bind("Cosmetics", "UnlockAll", true, "Unlock all cosmetics");
@@ -72,20 +77,21 @@ public partial class AUnlocker : BasePlugin
         AlwaysShowLobbyTimer = Config.Bind("Other", "AlwaysShowLobbyTimer", false, "Always display the timer in the bottom left corner to indicate when the server will close the lobby (Works only as Host)");
         ShowTaskPanelInMeetings = Config.Bind("Other", "ShowTaskPanelInMeetings", false, "Show the task panel (contains a list of your tasks) during meetings");
         // Unsafe
-        AllowAllCharacters = Config.Bind("Unsafe", "AllowAllCharacters", false, "THESE ARE UNSAFE AND CAN GET YOU KICKED BY ANTI-CHEAT, USE WITH CAUTION\n\nBe able to send any character in chat");
-        NoCharacterLimit = Config.Bind("Unsafe", "NoCharacterLimit", false, "No character limit in chat");
+        NoCharacterLimit = Config.Bind("Unsafe", "NoCharacterLimit", false, "THESE ARE UNSAFE AND CAN GET YOU KICKED BY ANTI-CHEAT, USE WITH CAUTION\n\nNo character limit in chat");
         NoChatCooldown = Config.Bind("Unsafe", "NoChatCooldown", false, "No 3s cooldown between chat messages");
         NoOptionsLimits = Config.Bind("Unsafe", "NoOptionsLimits", false, "No limits on game host options (e.g. amount of impostors)");
 
         Harmony.PatchAll();
 
-        if (!DisableTelemetry.Value) return;
-        Analytics.deviceStatsEnabled = false;
-        Analytics.enabled = false;
-        Analytics.initializeOnStartup = false;
-        Analytics.limitUserTracking = true;
-        CrashReportHandler.enableCaptureExceptions = false;
-        PerformanceReporting.enabled = false;
+        if (Application.platform != RuntimePlatform.Android && DisableTelemetry.Value)
+        {
+            Analytics.deviceStatsEnabled = false;
+            Analytics.enabled = false;
+            Analytics.initializeOnStartup = false;
+            Analytics.limitUserTracking = true;
+            CrashReportHandler.enableCaptureExceptions = false;
+            PerformanceReporting.enabled = false;
+        }
 
         // If Among Us updates their IAP / Analytics system, we will need to use this:
             // using Unity.Services.Analytics;
@@ -94,8 +100,6 @@ public partial class AUnlocker : BasePlugin
         // More Info: https://discussions.unity.com/t/iap-privacy-issue/881743
 
         AddComponent<KeybindListener>().Plugin = this;
-        HudManager_Start_Patch.Plugin = this;
-        ChatJailbreak_ChatController_Update_Postfix.Plugin = this;
     }
 }
 
@@ -107,7 +111,7 @@ public class KeybindListener : MonoBehaviour
     {
         if (!Input.GetKeyDown(AUnlocker.ReloadConfigKeybind.Value)) return;
         Plugin.Config.Reload();
-        Plugin.Log.LogInfo("Configuration reloaded.");
+        AUnlocker.Log.LogInfo("Configuration reloaded.");
     }
 }
 
@@ -146,10 +150,9 @@ public static class Resize
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Start))]
 public static class HudManager_Start_Patch
 {
-    public static AUnlocker Plugin { get; internal set; }
     public static void Postfix()
     {
         Resize.ResizeUI(AUnlocker.ButtonSize.Value);
-        Plugin.Log.LogInfo("UI resized to " + AUnlocker.ButtonSize.Value * 100 + "%");
+        AUnlocker.Log.LogInfo("UI resized to " + AUnlocker.ButtonSize.Value * 100 + "%");
     }
 }

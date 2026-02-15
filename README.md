@@ -33,10 +33,11 @@
     - Not being able to play online
   - Removes the time penalty after disconnecting from too many lobbies
 - 💬 Chat Features
-  - Use `Ctrl + C` and `Ctrl + V` to copy-paste chat messages
+  - Use `Ctrl + C`, `Ctrl + V` and `Ctrl + X` to copy, paste and cut chat messages
   - Scroll through your previously sent chat messages using the Up and Down arrow keys
-  - Be able to send URLs and Email addresses
+  - Be able to send symbols, URLs and Email addresses
   - Increase the character limit from 100 to 120
+  - Reduce the chat cooldown from 3s to 2.1s
   - Modify the maximum amount of chat messages to keep in the chat history
 - ✨ Other Features
   - Remove the 60 FPS cap
@@ -47,7 +48,6 @@
   - Always display the timer in the bottom left corner to indicate when the server will close the lobby (Works only as Host)
   - Show the task panel (contains a list of your tasks) during meetings
 - 💣 Unsafe
-  - Be able to send any character in chat
   - No character limit in chat
   - No 3s cooldown between chat messages
   - No limits on game host options (e.g. amount of impostors)
@@ -67,6 +67,7 @@ The table below lists the most recent AUnlocker release for each Among Us versio
 
 |    Among Us Version     |          AUnlocker Version          |
 |:-----------------------:|:-----------------------------------:|
+| `17.1.0` (`2025.11.18`) | [v1.3.0](../../releases/tag/v1.3.0) |
 | `17.0.1` (`2025.10.14`) | [v1.2.2](../../releases/tag/v1.2.2) |
 |  `17.0.0` (`2025.9.9`)  | [v1.2.2](../../releases/tag/v1.2.2) |
 | `16.1.0` (`2025.6.10`)  | [v1.2.2](../../releases/tag/v1.2.2) |
@@ -97,14 +98,14 @@ The table below lists the most recent AUnlocker release for each Among Us versio
 - Launch Among Us. The first launch will take **MUCH** longer, so don't worry if you have to wait a few minutes.
 
 ## 🐧 Linux
-- Make sure you are running Among Us under Proton (or Wine). On Steam you can check this by right-clicking Among Us in your library → `Properties` → `Compatibility` → `Force the use of a specific Steam Play compatibility tool`. Test different Proton versions if you're having issues launching the game. 
+- Make sure you are running Among Us under Proton (or Wine). On Steam you can check this by right-clicking Among Us in your library → `Properties` → `Compatibility` → `Force the use of a specific Steam Play compatibility tool`. Test different Proton versions if you're having issues launching the game.
 - Check out [this guide](https://docs.bepinex.dev/articles/advanced/proton_wine.html) to get BepInEx (the framework AUnlocker is built upon) working. Alternatively, if you are using Proton with Steam, you can specify the DLL override in the launch options (right-click Among Us in your library → `Properties` → `General` → `Launch Options`): `WINEDLLOVERRIDES="winhttp.dll=n,b" %command%` Then follow the steps for Windows.
-- If you are experiencing crashes or errors like `Unable to execute IL2CPP chainloader`, set your launch options (right-click Among Us in your library → `Properties` → `General` → `Launch Options`) to `PROTON_NO_ESYNC=1 PROTON_USE_WINED3D=1 WINEDLLOVERRIDES="winhttp.dll=n,b" %command%` 
+- If you are experiencing crashes or errors like `Unable to execute IL2CPP chainloader`, set your launch options (right-click Among Us in your library → `Properties` → `General` → `Launch Options`) to `PROTON_NO_ESYNC=1 PROTON_USE_WINED3D=1 WINEDLLOVERRIDES="winhttp.dll=n,b" %command%`
 
 <hr>
 
 <b>👾 If you are already using other mods or already have BepInEx installed:</b>
-- You should see a folder called `BepInEx` inside your Among Us folder. 
+- You should see a folder called `BepInEx` inside your Among Us folder.
 - Download `AUnlocker_v*.dll` from the [latest release](../../releases/latest), put it into `BepInEx/plugins` and launch Among Us.
 
 <b>👷‍♂️ If you don't want to download the pre-compiled DLL, you can build AUnlocker from source by following these steps:</b>
@@ -119,10 +120,11 @@ General contribution:
 - If you want to add a new feature or edit / improve existing code, fork this repo and create a pull request with your changes.  ([how?](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project))
 
 Getting started modding Among Us:
-- Learn [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)) and [Unity](https://unity.com), as well as [BepInEx](https://github.com/BepInEx/BepInEx) and [HarmonyX](https://github.com/BepInEx/HarmonyX)
-- Read the [docs](https://docs.reactor.gg) for [Reactor](https://github.com/NuclearPowered/Reactor), a modding API for Among Us. \
-  Join their [discord](https://reactor.gg/discord) for the latest `Assembly-CSharp.dll` files. Open them using [dnSpy](https://github.com/dnSpy/dnSpy) to view the game's decompiled client code.
-- Take a look at [sus.wiki](https://github.com/roobscoob/among-us-protocol) to learn more about the Among Us network protocol
+- Learn the basics of [C#](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)), [Unity](https://learn.unity.com/), [BepInEx](https://docs.bepinex.dev/master/) and [HarmonyX](https://github.com/BepInEx/HarmonyX/wiki)
+- Read the [Reactor docs](https://docs.reactor.gg) for how to set up your plugin and IDE to work with Among Us. \
+  Join their [discord](https://reactor.gg/discord) to download the latest `Assembly-CSharp.dll`, which you can open using [dnSpyEx](https://github.com/dnSpyEx/dnSpy) or [ILSpy](https://github.com/icsharpcode/ILSpy) to view the game's decompiled client code.
+- Try to read and understand code from your favorite mod (if it's open-source, which most are)
+- Advanced: Take a look at [sus.wiki](https://github.com/roobscoob/among-us-protocol) to learn more about the Among Us network protocol
 
 For more detailed contribution guidelines, read [CONTRIBUTING.md](/.github/CONTRIBUTING.md)
 

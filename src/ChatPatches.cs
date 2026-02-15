@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -10,12 +9,10 @@ namespace AUnlocker;
 [HarmonyPatch(typeof(ChatController), nameof(ChatController.Update))]
 public static class ChatJailbreak_ChatController_Update_Postfix
 {
-    public static AUnlocker Plugin { get; internal set; }
-
     // CurrentHistorySelection: -1 = no selection, 0 = first message, Count - 1 = last message
     public static int CurrentHistorySelection = -1;
     private static string inProgressMessage = "";
-    private static bool isNavigatingHistory = false;
+    private static bool isNavigatingHistory;
 
     /// <summary>
     /// Remove the chat cooldown and the character limit. Add the ability to scroll through previous chat messages using the up and down arrow keys.
@@ -36,14 +33,14 @@ public static class ChatJailbreak_ChatController_Update_Postfix
             __instance.freeChatField.textArea.characterLimit = int.MaxValue;
         }
 
-        // Set chat cooldown to 2.1s opposed to orginal 3s
-        if (__instance.timeSinceLastMessage < 0.9f)
-        {
-            __instance.timeSinceLastMessage = 0.9f;
-        }
-
         else if (AUnlocker.PatchChat.Value)
         {
+            // Set chat cooldown to 2.1s opposed to original 3s
+            if (__instance.timeSinceLastMessage < 0.9f)
+            {
+                __instance.timeSinceLastMessage = 0.9f;
+            }
+
             //__instance.freeChatField.textArea.AllowPaste = true;
             __instance.freeChatField.textArea.AllowSymbols = true;
             __instance.freeChatField.textArea.AllowEmail = true;
@@ -64,7 +61,7 @@ public static class ChatJailbreak_ChatController_Update_Postfix
             if (CurrentHistorySelection == 0)
             {
                 SoundManager.Instance.PlaySound(__instance.warningSound, false);
-                Plugin.Log.LogInfo("You have reached the end of your chat history.");
+                AUnlocker.Log.LogInfo("You have reached the end of your chat history.");
             }
             else
             {
@@ -177,39 +174,11 @@ public static class ChatHistory_ChatController_SendChat_Prefix
     }
 }
 
-[HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.IsCharAllowed))]
-public static class AllowAllCharacters_TextBoxTMP_IsCharAllowed_Prefix
-{
-    /// <summary>
-    /// Allow any character to be typed into the chatbox.
-    /// </summary>
-    /// <param name="__instance">The <c>TextBoxTMP</c> instance.</param>
-    /// <param name="__result">Original return value of <c>IsCharAllowed</c>.</param>
-    /// <param name="i"> The character to check.</param>
-    /// <returns><c>false</c> to skip the original method, <c>true</c> to allow the original method to run.</returns>
-    public static bool Prefix(TextBoxTMP __instance, char i, ref bool __result)
-    {
-        if (!AUnlocker.AllowAllCharacters.Value) return true;
-
-        // Bugfix: backspace and newline messing with chat message
-        HashSet<char> blockedSymbols = ['\b', '\r'];
-
-        if (blockedSymbols.Contains(i))
-        {
-            __result = false;
-            return false;
-        }
-
-        __result = true;
-        return false;
-    }
-}
-
 [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.Start))]
-public static class AllowPaste_TextBoxTMP_Start_Postfix
+public static class AllowSymbols_TextBoxTMP_Start_Postfix
 {
     /// <summary>
-    /// Allow email symbols to be typed into the chatbox and enables pasting text with CTRL + V.
+    /// Allow symbols to be typed into the chatbox.
     /// </summary>
     /// <param name="__instance">The <c>TextBoxTMP</c> instance.</param>
     public static void Postfix(TextBoxTMP __instance)
@@ -218,7 +187,6 @@ public static class AllowPaste_TextBoxTMP_Start_Postfix
 
         __instance.allowAllCharacters = true; // not used by game's code, but I include it anyway
         __instance.AllowEmail = true;
-        //__instance.AllowPaste = true;
         __instance.AllowSymbols = true;
     }
 }
