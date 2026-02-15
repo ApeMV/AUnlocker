@@ -30,6 +30,7 @@ public partial class AUnlocker : BasePlugin
     // Chat
     public static ConfigEntry<bool> PatchChat;
     public static ConfigEntry<int> ChatHistoryLimit;
+    public static ConfigEntry<bool> NumberCensorBypass;
 
     // Cosmetics
     public static ConfigEntry<bool> UnlockCosmetics;
@@ -65,6 +66,7 @@ public partial class AUnlocker : BasePlugin
         // Chat
         PatchChat = Config.Bind("Chat", "Enabled", true, "Use Ctrl+C, Ctrl+V and Ctrl+X to copy, paste and cut chat messages\nBe able to send symbols, URLs and Email addresses\nIncrease the character limit from 100 to 120\nReduce the chat cooldown from 3s to 2.1s");
         ChatHistoryLimit = Config.Bind("Chat", "ChatHistoryLimit", 20, "The maximum amount of chat messages to keep in the chat history");
+        NumberCensorBypass = Config.Bind("Chat", "NumberCensorBypass", true, "Convert numbers into a different font when neccesary to bypass the 5+ number censorship");
         // Cosmetics
         UnlockCosmetics = Config.Bind("Cosmetics", "UnlockAll", true, "Unlock all cosmetics");
         DontShowCosmeticsInGame = Config.Bind("Cosmetics", "DontShowCosmeticsInGame", false, "Don't show any cosmetics in-game (only client-side)");

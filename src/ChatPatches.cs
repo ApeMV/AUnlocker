@@ -162,16 +162,73 @@ public static class ChatHistory_ChatController_SendChat_Prefix
     /// </summary>
     /// <param name="__instance">The <c>ChatController</c> instance.</param>
     /// <returns><c>false</c> to skip the original method, <c>true</c> to allow the original method to run.</returns>
+    private static float chatTimer = 0f;
     public static bool Prefix(ChatController __instance)
     {
+        if (Time.time < chatTimer) return false;
+
         var text = __instance.freeChatField.textArea.text;
+        string textNew = ConvertNum(text);
         // Add to chat history if empty or not the same as the previous message
         // This also intentionally allows empty / whitespace-only messages to be added to history
-        if (ChatHistory.LastOrDefault() != text)
-            ChatHistory.Add(text);
+        if (ChatHistory.LastOrDefault() != textNew)
+            ChatHistory.Add(textNew);
         ChatJailbreak_ChatController_Update_Postfix.CurrentHistorySelection = ChatHistory.Count;
-        return true;
+
+        // Manually send the converted text in order to not update the chatbox
+        if (AUnlocker.NumberCensorBypass.Value)
+        {
+            PlayerControl.LocalPlayer.RpcSendChat($"{textNew}");
+            __instance.freeChatField.textArea.Clear();
+
+            // Mimic standard chat cooldown
+            chatTimer = Time.time + (AUnlocker.NoChatCooldown.Value ? 0f : 2.1f);
+
+            return false;
+        }
+
+        else return true;
     }
+
+    public static string ConvertNum(string input)
+    {
+        if (string.IsNullOrEmpty(input) || !AUnlocker.NumberCensorBypass.Value) return input;
+        int digitCount = 0;
+
+        // Only convert when there are over 5 numbers
+        for (int i = 0; i < input.Length; i++)
+        {
+            if (char.IsDigit(input[i]) && ++digitCount > 5)
+            {
+                var sb = new System.Text.StringBuilder(input.Length);
+
+                foreach (char c in input)
+                {
+                    // Check for exact numbers and convert them before sending the message
+                    if (char.IsDigit(c))
+                        sb.Append(numbers[c - '0']);
+                    else
+                        sb.Append(c);
+                }
+                return sb.ToString();
+            }
+        }
+        return input;
+    }
+
+    public static readonly char[] numbers =
+    {
+        '⓪', // 0
+        '①', // 1
+        '②', // 2
+        '③', // 3
+        '④', // 4
+        '⑤', // 5
+        '⑥', // 6
+        '⑦', // 7
+        '⑧', // 8
+        '⑨'  // 9
+    };
 }
 
 [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.Start))]
